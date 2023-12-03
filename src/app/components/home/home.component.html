@@ -1,7 +1,9 @@
 <!-- weather.component.html -->
 <div *ngFor="let data of weatherData; let i = index">
   <p>{{ data.weather.description }}</p>
+  <p>Latitude: {{ data.weather.latitude }}, Longitude: {{ data.weather.longitude }}</p>
   <p>Note: {{ data.note }}</p>
+  <p>Temperature: {{ getTemperature(data.weather.hourly.temperature_2m) }} °C</p>
   <input [(ngModel)]="data.note" placeholder="Update Note" />
   <button (click)="updateNote(i, data.note)">Update Note</button>
   <button (click)="deleteWeather(i)">Delete Weather</button>

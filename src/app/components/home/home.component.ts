@@ -9,9 +9,9 @@ import { ApiService } from 'src/app/services/api.service';
 })
 export class HomeComponent implements OnInit{
   weatherData: any[] = [];
-  newLatitude!: number;
-  newLongitude!: number;
-  newNote!: string;
+  newLatitude: number = 0; 
+  newLongitude: number = 0;
+  newNote: string = '';
 
   constructor(private apiService: ApiService) {}
 
@@ -42,4 +42,9 @@ export class HomeComponent implements OnInit{
       this.loadWeatherData();
     });
   }
+
+  getTemperature(temperatures: number[]): number | undefined {
+    return temperatures.length > 0 ? temperatures[0] : undefined;
+  }
+
 }

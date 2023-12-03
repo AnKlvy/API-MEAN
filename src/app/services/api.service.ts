@@ -16,7 +16,7 @@ export class ApiService {
   }
 
   addWeatherData(latitude: number, longitude: number, note: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/getWeather`, { latitude, longitude, note });
+    return this.http.post<any>(`${this.apiUrl}/addWeather`, { latitude, longitude, note });
   }
 
   updateNote(index: number, note: string): Observable<any> {

@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 const localStorage = new LocalStorage('./scratch');
 
 // Обработчик для получения прогноза погоды и добавления заметки
-app.post('/api/getWeather', async (req, res) => {
+app.post('/api/addWeather', async (req, res) => {
   try {
     const response = await axios.get('https://api.open-meteo.com/v1/forecast', {
       params: {
