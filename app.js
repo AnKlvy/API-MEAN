@@ -1,17 +1,21 @@
 const express = require('express');
+const app = express();
 const axios = require('axios');
+const bodyParser = require('body-parser');
+const LocalStorage = require('node-localstorage').LocalStorage;
 const cors = require("cors");
 
-const app = express();
-const port = 8080;
+const PORT = 3000;
+
 app.use(cors());
-app.use(express.json());
-const fs = require('fs');
+app.use(bodyParser.json());
 
+// Создаем объект локального хранилища для эмуляции localStorage в Node.js
+const localStorage = new LocalStorage('./scratch');
 
+// Обработчик для получения прогноза погоды и добавления заметки
 app.post('/api/getWeather', async (req, res) => {
   try {
-    // Запрос к API
     const response = await axios.get('https://api.open-meteo.com/v1/forecast', {
       params: {
         latitude: req.body.latitude,
@@ -20,29 +24,63 @@ app.post('/api/getWeather', async (req, res) => {
       }
     });
 
-    // Преобразование объекта данных в JSON строку
-    const jsonData = JSON.stringify(response.data);
+    // Получение текущих данных из localStorage (если они там есть)
+    const existingData = JSON.parse(localStorage.getItem('weatherDataWithNotes')) || [];
 
-    // Запись JSON строки в файл (в данном случае data.json)
-    fs.writeFile('data.json', jsonData, 'utf-8', (err) => {
-      if (err) {
-        console.error('Error writing JSON to file:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
-      } else {
-        console.log('JSON data written to file successfully');
-        res.status(200).json({ success: true });
-      }
-    });
+    // Добавление новых данных к существующим
+    const newData = { weather: response.data, note: req.body.note };
+    existingData.push(newData);
 
+    // Обновление данных в localStorage
+    localStorage.setItem('weatherDataWithNotes', JSON.stringify(existingData));
+
+    res.status(200).json({ success: true });
   } catch (error) {
     console.error('Error fetching data from API:', error.message);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Обработчик для получения данных о погоде и заметке
+app.get('/api/getWeatherData', (req, res) => {
+  const data = JSON.parse(localStorage.getItem('weatherDataWithNotes')) || [];
+  res.status(200).json(data);
 });
 
+// Обработчик для изменения заметки
+app.put('/api/updateNote/:index', (req, res) => {
+  const index = parseInt(req.params.index, 10);
+  const data = JSON.parse(localStorage.getItem('weatherDataWithNotes')) || [];
 
+  if (index >= 0 && index < data.length) {
+    data[index].note = req.body.note;
+
+    // Обновление данных в localStorage
+    localStorage.setItem('weatherDataWithNotes', JSON.stringify(data));
+
+    res.status(200).json({ success: true });
+  } else {
+    res.status(404).json({ error: 'Index not found' });
+  }
+});
+
+// Обработчик для удаления данных о погоде и заметке
+app.delete('/api/deleteWeather/:index', (req, res) => {
+  const index = parseInt(req.params.index, 10);
+  let data = JSON.parse(localStorage.getItem('weatherDataWithNotes')) || [];
+
+  if (index >= 0 && index < data.length) {
+    data = data.filter((_, i) => i !== index);
+
+    // Обновление данных в localStorage
+    localStorage.setItem('weatherDataWithNotes', JSON.stringify(data));
+
+    res.status(200).json({ success: true });
+  } else {
+    res.status(404).json({ error: 'Index not found' });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

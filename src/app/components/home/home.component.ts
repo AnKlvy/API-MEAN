@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ApiService } from 'src/app/services/api.service';
 
@@ -7,36 +7,39 @@ import { ApiService } from 'src/app/services/api.service';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent {
-  weather: any[] = [];
-  form: FormGroup;
-  constructor(
-    private apiService: ApiService,
-    private formBuilder: FormBuilder,
-    ) {
-      this.form = this.formBuilder.group({
-        longitude: '',
-        latitude: ''
-      });
-     }
+export class HomeComponent implements OnInit{
+  weatherData: any[] = [];
+  newLatitude!: number;
+  newLongitude!: number;
+  newNote!: string;
 
-    onSubmit() {
-      if (this.form.valid) {
-        const longitude_latitude = this.form.value;
-        
-        // Пример отправки данных с использованием HttpClient
-  this.apiService.getWeather(longitude_latitude).subscribe(
-    () => {
-      console.log('Погода успешно получена:');
-      // Вы можете выполнить дополнительные действия после успешной регистрации
-    },
-    (error: any) => {
-      console.log(longitude_latitude)
-      console.error('Ошибка при получении погоды:', error);
-      // Обработайте ошибку, например, показав сообщение об ошибке на фронтенде
-    }
-  );
-  
-      }
-    }
+  constructor(private apiService: ApiService) {}
+
+  ngOnInit(): void {
+    this.loadWeatherData();
+  }
+
+  loadWeatherData(): void {
+    this.apiService.getWeatherData().subscribe(data => {
+      this.weatherData = data;
+    });
+  }
+
+  addWeather(): void {
+    this.apiService.addWeatherData(this.newLatitude, this.newLongitude, this.newNote).subscribe(() => {
+      this.loadWeatherData();
+    });
+  }
+
+  updateNote(index: number, newNote: string): void {
+    this.apiService.updateNote(index, newNote).subscribe(() => {
+      this.loadWeatherData();
+    });
+  }
+
+  deleteWeather(index: number): void {
+    this.apiService.deleteWeatherData(index).subscribe(() => {
+      this.loadWeatherData();
+    });
+  }
 }

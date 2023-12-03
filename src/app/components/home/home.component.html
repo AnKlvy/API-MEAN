@@ -1,8 +1,14 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <label for="longitude">Longitude</label>
-      <input type="number" id="longitude" formControlName="longitude">
-      <label for="latitude">Latitude</label>
-      <input type="number" id="latitude" formControlName="latitude">
-      <button type="submit">Weather</button>
+<!-- weather.component.html -->
+<div *ngFor="let data of weatherData; let i = index">
+  <p>{{ data.weather.description }}</p>
+  <p>Note: {{ data.note }}</p>
+  <input [(ngModel)]="data.note" placeholder="Update Note" />
+  <button (click)="updateNote(i, data.note)">Update Note</button>
+  <button (click)="deleteWeather(i)">Delete Weather</button>
+</div>
 
-</form>
+<h2>Add New Weather</h2>
+<input [(ngModel)]="newLatitude" placeholder="Latitude" />
+<input [(ngModel)]="newLongitude" placeholder="Longitude" />
+<input [(ngModel)]="newNote" placeholder="Note" />
+<button (click)="addWeather()">Add Weather</button>
